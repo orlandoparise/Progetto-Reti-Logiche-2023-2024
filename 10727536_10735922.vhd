@@ -32,7 +32,7 @@ architecture behavioral of project_reti_logiche is
     signal o_done_tmp,  o_mem_en_tmp,  o_mem_we_tmp: std_logic; -- segnali non sincronizzati
     
     begin
-        gestione_stato: process(i_clk, i_rst)
+        gestione_clk_rst: process(i_clk, i_rst)
         begin   
             if i_rst = '1' then 
                 stato_attuale <= RESET;                    
@@ -59,7 +59,7 @@ architecture behavioral of project_reti_logiche is
             end if;
         end process;
         
-        gestione_transizione: process(stato_attuale)
+        gestione_stato: process(stato_attuale)
         begin
             if stato_attuale = RESET then
                 if i_rst = '0' then 
