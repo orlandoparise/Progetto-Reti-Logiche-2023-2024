@@ -1,5 +1,6 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity project_reti_logiche is
     port (
@@ -114,11 +115,26 @@ architecture behavioral of project_reti_logiche is
                     end if;
                 else;
                 end if;
-            elsif stato_attuale = PARI then
-                -- cambio segnali
-            elsif stato_attuale = DISPARI then
-                -- cambio segnali
-            end if;
+                elsif stato_attuale = PARI then
+                    if valore_trovato_diverso_da_zero = '0' then                                                -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
+                        indice <= std_logic_vector(signed(indice) + 1);                                             -- non modifico il valore in quanto già 0 e passo allo stato successivo
+                        stato_prossimo <= DISPARI;
+                    else                                                                                                                                 -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
+                        if  i_mem_data /= "00000000" then                                                               -- il valore del dato nell'indice è 0                    
+                            indice <= std_logic_vector(signed(indice) + 1);
+                        
+                    -- cambio segnali
+                elsif stato_attuale = DISPARI then
+                    if valore_trovato_diverso_da_zero = '0' then                                                -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
+                    indice <= std_logic_vector(signed(indice) + 1);                                                 -- non modifico il valore in quanto già 0 e passo allo stato successivo
+                        stato_prossimo <= PARI;
+                    else                                                                                                                                -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
+                    if  i_mem_data /= "00000000" then                                                                  -- il valore del dato nell'indice è 0  
+                        o_mem_data <= "00011111";                                                                                -- si scrive la credibilità a 31
+                        indice <= std_logic_vector(signed(indice) + 1);
+    
+                    -- cambio segnali
+                end if;
         end process;
           
 end behavioral;
