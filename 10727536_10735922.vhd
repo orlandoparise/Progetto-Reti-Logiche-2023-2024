@@ -140,12 +140,12 @@ architecture behavioral of project_reti_logiche is
 
                     -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
                     if valore_trovato_diverso_da_zero = '0' then
-                    indice <= std_logic_vector(signed(indice) + 1); -- non modifico il valore in quanto già 0 e passo allo stato successivo
+                    indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
                         stato_prossimo <= PARI;
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
                         if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0  
                             o_mem_data <= "00011111";   -- si scrive la credibilità a 31
-                            indice <= std_logic_vector(signed(indice) + 1);
+                            indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
                         end if;
                     end if;
     
