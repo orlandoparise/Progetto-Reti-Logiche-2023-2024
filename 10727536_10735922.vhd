@@ -130,8 +130,24 @@ architecture behavioral of project_reti_logiche is
                         o_mem_we_tmp <= '0';
 
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
-                        if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0                    
-                            indice <= std_logic_vector(signed(indice) + 1);
+                        if  i_mem_data = "00000000" then   -- il valore del dato nell'indice è 0    
+                            modifica <= '1';
+                            trovato_valore_diverso_da_zero <= '1';
+                            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice) - 2);
+                            o_mem_data_tmp <= (others => '0');
+                            o_done_tmp <= '0';
+                            o_mem_en_tmp <= '1';
+                            o_mem_we_tmp <= '1';                
+                            indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+                        else
+                            modifica <= '0';
+                            trovato_valore_diverso_da_zero <= '1';
+                            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                            o_mem_data_tmp <= (others => '0');
+                            o_done_tmp <= '0';
+                            o_mem_en_tmp <= '1';
+                            o_mem_we_tmp <= '1';                
+                            indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
                         end if;
                     end if;
                         
