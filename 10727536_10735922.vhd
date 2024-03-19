@@ -80,7 +80,7 @@ architecture behavioral of project_reti_logiche is
                         indice <= (others => '0');
                         modifica <= '0';
                         trovato_valore_diverso_da_zero <= '0';
-                        o_mem_addr_tmp <= (others => '0');
+                        o_mem_addr_tmp <= i_add;
                         o_mem_data_tmp <= (others => '0');
                         o_done_tmp <= '0';
                         o_mem_en_tmp <= '1';
@@ -107,7 +107,7 @@ architecture behavioral of project_reti_logiche is
                         indice <= (others => '0');
                         modifica <= '0';
                         trovato_valore_diverso_da_zero <= '0';
-                        o_mem_addr_tmp <= (others => '0');
+                        o_mem_addr_tmp <= i_add;
                         o_mem_data_tmp <= (others => '0');
                         o_done_tmp <= '0';
                         o_mem_en_tmp <= '1';
@@ -116,11 +116,19 @@ architecture behavioral of project_reti_logiche is
                 else
                 end if;
                 elsif stato_attuale = PARI then
-
                     -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
                     if valore_trovato_diverso_da_zero = '0' then
-                        indice <= std_logic_vector(signed(indice) + 1); -- non modifico il valore in quanto già 0 e passo allo stato successivo
                         stato_prossimo <= DISPARI;
+            
+                        indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1); -- non modifico il valore in quanto già 0 e passo allo stato successivo
+                        modifica <= '0';
+                        trovato_valore_diverso_da_zero <= '0';
+                        o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                        o_mem_data_tmp <= (others => '0');
+                        o_done_tmp <= '0';
+                        o_mem_en_tmp <= '1';
+                        o_mem_we_tmp <= '0';
+
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
                         if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0                    
                             indice <= std_logic_vector(signed(indice) + 1);
