@@ -47,7 +47,7 @@ architecture behavioral of project_reti_logiche is
                 o_mem_en <= '0';
                 o_mem_we <= '0';
 
-            elsif rising_edge(i_clk) then
+            elsif rising_edge(i_clk) then               -- sincronizzazione sul fronte di salita
                 stato_attuale <= stato_prossimo;
 
                 o_mem_addr <= o_mem_addr_tmp;
@@ -156,7 +156,7 @@ architecture behavioral of project_reti_logiche is
 
                     -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
                     if valore_trovato_diverso_da_zero = '0' then
-                    indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+                        indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
                         stato_prossimo <= PARI;
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
                         if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0  
