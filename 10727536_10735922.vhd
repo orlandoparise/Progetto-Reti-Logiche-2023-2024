@@ -22,7 +22,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture behavioral of project_reti_logiche is
-    type tipo_stato is (RESET, ATTESA, PARI, DISPARI);  -- PARI: parola, DISPARI: cella vuota
+    type tipo_stato is (RESET, ATTESA, PARI, DISPARI, MODIFICA);  -- PARI: parola, DISPARI: cella vuota, MODIFICA: sostituzione 0 con parola precedente o 0 con credibilità
     signal stato_attuale, stato_prossimo: tipo_stato;
     signal indice: std_logic_vector(9 downto 0);    -- indice di scorrimento nella sequenza
     signal modifica: std_logic; -- indica la necessità di modificare la parola e di conseguenza la credibilità (quando si incontra uno zero in uno spazio di parola, eccetto NOTA)
