@@ -156,16 +156,58 @@ architecture behavioral of project_reti_logiche is
 
                     -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
                     if valore_trovato_diverso_da_zero = '0' then
+
                         indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
-                        stato_prossimo <= PARI;
+                        
+                        if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
+                            stato_prossimo <= PARI;
+
+                            modifica <= '0';
+                            trovato_valore_diverso_da_zero <= '0';
+                            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                            o_mem_data_tmp <= (others => '0');
+                            o_done_tmp <= '0';
+                            o_mem_en_tmp <= '1';
+                            o_mem_we_tmp <= '0';
+                        else
+                            stato_prossimo <= ATTESA;
+
+                            modifica <= '0';
+                            trovato_valore_diverso_da_zero <= '0';
+                            o_mem_addr_tmp <= (others => '0');
+                            o_mem_data_tmp <= (others => '0');
+                            o_done_tmp <= '1';
+                            o_mem_en_tmp <= '0';
+                            o_mem_we_tmp <= '0';
+                        end if;
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
-                        if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0  
+                        if  i_mem_data = "00000000" then   -- il valore del dato nell'indice è 0  
                             o_mem_data <= "00011111";   -- si scrive la credibilità a 31
                             indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+                        
+                            if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
+                                stato_prossimo <= PARI;
+    
+                                modifica <= '0';
+                                trovato_valore_diverso_da_zero <= '0';
+                                o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                                o_mem_data_tmp <= (others => '0');
+                                o_done_tmp <= '0';
+                                o_mem_en_tmp <= '1';
+                                o_mem_we_tmp <= '0';
+                            else
+                                stato_prossimo <= ATTESA;
+    
+                                modifica <= '0';
+                                trovato_valore_diverso_da_zero <= '0';
+                                o_mem_addr_tmp <= (others => '0');
+                                o_mem_data_tmp <= (others => '0');
+                                o_done_tmp <= '1';
+                                o_mem_en_tmp <= '0';
+                                o_mem_we_tmp <= '0';
+                            end if; 
                         end if;
                     end if;
-    
-                    -- cambio segnali
                 end if;
         end process;
           
