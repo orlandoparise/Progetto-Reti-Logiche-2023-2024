@@ -156,7 +156,7 @@ architecture behavioral of project_reti_logiche is
 
                     -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
                     if valore_trovato_diverso_da_zero = '0' then
-                        indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+                    indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
                         stato_prossimo <= PARI;
                     else    -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
                         if  i_mem_data /= "00000000" then   -- il valore del dato nell'indice è 0  
