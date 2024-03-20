@@ -154,10 +154,28 @@ begin
             end if;
 
         elsif stato_attuale = READ_PAROLA_PREC then
-            -- aggiornamento segnali
+            stato_prossimo <= WRITE_PAROLA_PREC;
+
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 2);
+            modifica <= '1';
+            trovato_valore_diverso_da_zero <= '1';
+            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+            o_mem_data_tmp <= (others => '0');
+            o_done_tmp <= '0';
+            o_mem_en_tmp <= '1';
+            o_mem_we_tmp <= '1';
 
         elsif stato_attuale = WRITE_PAROLA_PREC then
-            -- aggiornamento segnali
+            stato_prossimo <= CRED;
+
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
+            modifica <= '1';
+            trovato_valore_diverso_da_zero <= '1';
+            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+            o_mem_data_tmp <= (others => '0');
+            o_done_tmp <= '0';
+            o_mem_en_tmp <= '1';
+            o_mem_we_tmp <= '1';
 
         elsif stato_attuale = CRED then
             -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
