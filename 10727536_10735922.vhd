@@ -2,8 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-ENTITY project_reti_logiche is
-    PORT (
+entity project_reti_logiche is
+    port (
         i_clk : in std_logic;
         i_rst : in std_logic;
         i_start : in std_logic;
@@ -221,5 +221,4 @@ begin
         
         end if;
     end process;
-
 end behavioral;
