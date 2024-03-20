@@ -115,7 +115,7 @@ begin
             end if;
         
         elsif stato_attuale = PAROLA then
-            if valore_trovato_diverso_da_zero = '0' then -- non sono stati trovati valori diversi da 0 nella sequenza
+            if valore_trovato_diverso_da_zero = '0' then -- non sono ancora stati trovati valori diversi da 0 nella sequenza
                 stato_prossimo <= CRED; -- non modifico il valore e passo allo stato successivo
 
                 indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
@@ -127,7 +127,7 @@ begin
                 o_mem_en_tmp <= '1';
                 o_mem_we_tmp <= '0';
 
-            else -- è stata trovata una parola diversa da 0 nella sequenza
+            else -- è già stata trovata una parola diversa da 0 nella sequenza
                 if i_mem_data = "00000000" then -- il valore del dato nell'indice è 0    
                     stato_prossimo <= READ_PAROLA_PREC;
 
@@ -178,10 +178,9 @@ begin
             o_mem_we_tmp <= '1';
 
         elsif stato_attuale = CRED then
-            -- nel caso non siano ancora stati trovati valori diversi da 0 nella sequenza
-            if valore_trovato_diverso_da_zero = '0' then
-
-                indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+            if valore_trovato_diverso_da_zero = '0' then -- non sono ancora stati trovati valori diversi da 0 nella sequenza
+                
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
 
                 if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
                     stato_prossimo <= PAROLA;
@@ -193,6 +192,7 @@ begin
                     o_done_tmp <= '0';
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '0';
+                    
                 else
                     stato_prossimo <= ATTESA;
 
@@ -204,7 +204,7 @@ begin
                     o_mem_en_tmp <= '0';
                     o_mem_we_tmp <= '0';
                 end if;
-            else -- nel caso abbiamo già trovato una parola diversa da 0 nella sequenza
+            else -- è già stata trovata una parola diversa da 0 nella sequenza
                 if i_mem_data = "00000000" then -- il valore del dato nell'indice è 0  
                     o_mem_data <= "00011111"; -- si scrive la CRED a 31
                     indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
