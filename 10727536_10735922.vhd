@@ -146,7 +146,7 @@ begin
                     modifica <= '0';
                     trovato_valore_diverso_da_zero <= '1';
                     o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
-                    o_mem_data_tmp <= (others => '0');
+                    o_mem_data_tmp <= "00011111";
                     o_done_tmp <= '0';
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '1';
@@ -166,21 +166,21 @@ begin
             o_mem_we_tmp <= '1';
 
         elsif stato_attuale = WRITE_PAROLA_PREC then
-            stato_prossimo <= CRED;
+            stato_prossimo <= READ_CRED_PREC;
 
-            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) - 1);
             modifica <= '1';
             trovato_valore_diverso_da_zero <= '1';
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
             o_mem_data_tmp <= (others => '0');
             o_done_tmp <= '0';
             o_mem_en_tmp <= '1';
-            o_mem_we_tmp <= '1';
+            o_mem_we_tmp <= '0';
 
         elsif stato_attuale = CRED then
             if valore_trovato_diverso_da_zero = '0' then -- non sono ancora stati trovati valori diversi da 0 nella sequenza
-                
-            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
+            
+                indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
 
                 if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
                     stato_prossimo <= PAROLA;
@@ -192,7 +192,6 @@ begin
                     o_done_tmp <= '0';
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '0';
-                    
                 else
                     stato_prossimo <= ATTESA;
 
@@ -204,41 +203,78 @@ begin
                     o_mem_en_tmp <= '0';
                     o_mem_we_tmp <= '0';
                 end if;
-            else -- è già stata trovata una parola diversa da 0 nella sequenza
-                if i_mem_data = "00000000" then -- il valore del dato nell'indice è 0  
-                    o_mem_data <= "00011111"; -- si scrive la CRED a 31
-                    indice <= std_logic_vector(signed(o_mem_addr_tmp) - signed(i_add) + 1);
+            else
+                indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
 
-                    if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
-                        stato_prossimo <= PAROLA;
+                if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
+                    stato_prossimo <= PAROLA;
 
-                        modifica <= '0';
-                        trovato_valore_diverso_da_zero <= '0';
-                        o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
-                        o_mem_data_tmp <= (others => '0');
-                        o_done_tmp <= '0';
-                        o_mem_en_tmp <= '1';
-                        o_mem_we_tmp <= '0';
-                    else
-                        stato_prossimo <= ATTESA;
+                    modifica <= '0';
+                    trovato_valore_diverso_da_zero <= '1';
+                    o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                    o_mem_data_tmp <= (others => '0');
+                    o_done_tmp <= '0';
+                    o_mem_en_tmp <= '1';
+                    o_mem_we_tmp <= '0';
+                else
+                    stato_prossimo <= ATTESA;
 
-                        modifica <= '0';
-                        trovato_valore_diverso_da_zero <= '0';
-                        o_mem_addr_tmp <= (others => '0');
-                        o_mem_data_tmp <= (others => '0');
-                        o_done_tmp <= '1';
-                        o_mem_en_tmp <= '0';
-                        o_mem_we_tmp <= '0';
-                    end if;
+                    modifica <= '0';
+                    trovato_valore_diverso_da_zero <= '0';
+                    o_mem_addr_tmp <= (others => '0');
+                    o_mem_data_tmp <= (others => '0');
+                    o_done_tmp <= '1';
+                    o_mem_en_tmp <= '0';
+                    o_mem_we_tmp <= '0';
                 end if;
             end if;
         
         elsif stato_attuale = READ_CRED_PREC then
-        -- aggiornamento segnali
+            stato_prossimo <= WRITE_CRED_PREC;
+
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 2);
+            modifica <= '1';
+            trovato_valore_diverso_da_zero <= '1';
+            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+
+            if (i_mem_data > 0) then
+                o_mem_data_tmp <= std_logic_vector(signed(i_mem_data) - 1);
+            else
+                o_mem_data_tmp <= "00000000";
+            end if;
+            
+            o_done_tmp <= '0';
+            o_mem_en_tmp <= '1';
+            o_mem_we_tmp <= '1';
 
         elsif stato_attuale = WRITE_CRED_PREC then
-        -- aggiornamento segnali
-        
+            indice <= std_logic_vector(signed(o_mem_addr) - signed(i_add) + 1);
+
+            if (signed(indice) < (signed(i_k) + signed(i_k) - 1)) then
+                stato_prossimo <= PAROLA;
+
+                modifica <= '0';
+                trovato_valore_diverso_da_zero <= '1';
+                o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
+                o_mem_data_tmp <= (others => '0');
+                o_done_tmp <= '0';
+                o_mem_en_tmp <= '1';
+                o_mem_we_tmp <= '0';
+            else
+                stato_prossimo <= ATTESA;
+
+                indice <= (others => '0');
+                modifica <= '0';
+                trovato_valore_diverso_da_zero <= '0';
+                o_mem_addr_tmp <= (others => '0');
+                o_mem_data_tmp <= (others => '0');
+                o_done_tmp <= '0';
+                o_mem_en_tmp <= '0';
+                o_mem_we_tmp <= '0';
+            end if;
+
+        else
+            stato_prossimo <= stato_attuale;
         end if;
     end process;
 end behavioral;
