@@ -24,7 +24,7 @@ end project_reti_logiche;
 architecture behavioral of project_reti_logiche is
     type tipo_stato is (RESET, ATTESA, PAROLA, READ_PAROLA_PREC, WRITE_PAROLA_PREC, CRED, READ_CRED_PREC, WRITE_CRED_PREC);
     signal stato_attuale, stato_prossimo : tipo_stato;
-    signal indice : std_logic_vector(9 downto 0); -- indice di scorrimento nella sequenza
+    signal indice : std_logic_vector(15 downto 0); -- indice di scorrimento nella sequenza
     signal modifica : std_logic; -- indica la necessità di modificare la parola e di conseguenza la credibilità (quando si incontra uno zero in uno spazio di parola, eccetto NOTA)
     signal trovato_valore_diverso_da_zero : std_logic; -- indica se è già stato trovato un valore diverso da 0 nella sequenza di parola, rimane 0 fino a quando non se ne trova uno
     signal o_mem_addr_tmp : std_logic_vector(15 downto 0); -- segnale non sincronizzato
