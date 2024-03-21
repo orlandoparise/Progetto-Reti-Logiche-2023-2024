@@ -237,7 +237,7 @@ begin
             trovato_valore_diverso_da_zero <= '1';
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + signed(indice));
 
-            if (i_mem_data > 0) then
+            if (signed(i_mem_data) > 0) then
                 o_mem_data_tmp <= std_logic_vector(signed(i_mem_data) - 1);
             else
                 o_mem_data_tmp <= "00000000";
