@@ -54,7 +54,8 @@ begin
             o_done <= o_done_tmp;
             o_mem_we <= o_mem_we_tmp;
             o_mem_en <= o_mem_en_tmp;
-
+        else
+            stato_attuale <= stato_prossimo;
         end if;
     end process;
 
@@ -85,6 +86,8 @@ begin
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '0';
                 end if;
+            else 
+                stato_prossimo <= stato_attuale;
             end if;
 
         elsif stato_attuale = ATTESA then
@@ -112,6 +115,8 @@ begin
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '0';
                 end if;
+            else 
+                stato_prossimo <= stato_attuale;
             end if;
         
         elsif stato_attuale = PAROLA then
@@ -272,7 +277,6 @@ begin
                 o_mem_en_tmp <= '0';
                 o_mem_we_tmp <= '0';
             end if;
-
         else
             stato_prossimo <= stato_attuale;
         end if;
