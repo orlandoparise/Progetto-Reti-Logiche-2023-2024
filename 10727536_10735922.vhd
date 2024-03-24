@@ -22,7 +22,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture behavioral of project_reti_logiche is
-    type state_type is (RESET, WAITING, WORD, READ_PREV_WORD, WRITE_PREV_WORD, CRED, READ_PREV_CRED, WRITE_PREV_CRED);
+    type state_type is (RESET, WAITING, WORD, READ_PREV_WORD, SHIFT, WRITE_PREV_WORD, CRED, READ_PREV_CRED, WRITE_PREV_CRED, DONE);
     signal current_state, next_state : state_type;
     signal o_mem_addr_tmp : std_logic_vector(15 downto 0);
     signal o_mem_data_tmp : std_logic_vector(7 downto 0);
@@ -158,11 +158,9 @@ begin
                 next_state <= READ_PREV_WORD;
                 load := '0';
             else 
-                next_state <= WRITE_PREV_WORD;
+                next_state <= SHIFT;
 
                 index := index + 2;
-                load := '1';
-                non_zero := '1';
 
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                 o_mem_data_tmp <= i_mem_data;
@@ -170,24 +168,31 @@ begin
                 o_mem_en_tmp <= '1';
                 o_mem_we_tmp <= '1';
             end if;
+        
+        elsif current_state = SHIFT then
+            next_state <= WRITE_PREV_WORD;
+
+            load := '0';
+            non_zero := '1';
+            
+            o_mem_data_tmp <= i_mem_data;
+            o_done_tmp <= '0';
+            o_mem_en_tmp <= '1';
+            o_mem_we_tmp <= '1';
+            
 
         elsif current_state = WRITE_PREV_WORD then
-            if load = '1' then
-                next_state <= WRITE_PREV_WORD;
-                load := '0';
-            else
-                next_state <= READ_PREV_CRED;
+            next_state <= READ_PREV_CRED;
 
-                index := index - 1;
-                load := '1';
-                non_zero := '1';
+            index := index - 1;
+            load := '1';
+            non_zero := '1';
 
-                o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
-                o_mem_data_tmp <= (others => '0');
-                o_done_tmp <= '0';
-                o_mem_en_tmp <= '1';
-                o_mem_we_tmp <= '0';
-            end if;
+            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
+            o_mem_data_tmp <= (others => '0');
+            o_done_tmp <= '0';
+            o_mem_en_tmp <= '1';
+            o_mem_we_tmp <= '0';
             
         elsif current_state = READ_PREV_CRED then
             if load = '1' then
@@ -231,7 +236,7 @@ begin
                     o_mem_en_tmp <= '1';
                     o_mem_we_tmp <= '0';
                 else
-                    next_state <= WAITING;
+                    next_state <= DONE;
 
                     index := 0;
                     load := '0';
@@ -239,7 +244,7 @@ begin
 
                     o_mem_addr_tmp <= (others => '0');
                     o_mem_data_tmp <= (others => '0');
-                    o_done_tmp <= '0';
+                    o_done_tmp <= '1';
                     o_mem_en_tmp <= '0';
                     o_mem_we_tmp <= '0';
                 end if;
@@ -266,7 +271,7 @@ begin
                         o_mem_en_tmp <= '1';
                         o_mem_we_tmp <= '0';
                     else
-                        next_state <= WAITING;
+                        next_state <= DONE;
 
                         index := 0;
                         load := '0';
@@ -293,7 +298,7 @@ begin
                         o_mem_en_tmp <= '1';
                         o_mem_we_tmp <= '0';
                     else
-                        next_state <= WAITING;
+                        next_state <= DONE;
 
                         index := 0;
                         load := '0';
@@ -307,6 +312,20 @@ begin
                     end if;
                 end if;
             end if;
+        
+        elsif current_state = DONE then
+            next_state <= WAITING;
+
+            index := 0;
+            load := '0';
+            non_zero := '0';
+
+            o_mem_addr_tmp <= (others => '0');
+            o_mem_data_tmp <= (others => '0');
+            o_done_tmp <= '1';
+            o_mem_en_tmp <= '0';
+            o_mem_we_tmp <= '0';
+
         end if;
     end process;
 end behavioral;
