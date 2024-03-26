@@ -24,6 +24,7 @@ end project_reti_logiche;
 architecture behavioral of project_reti_logiche is
     type state_type is (RESET, WAITING, SHIFT_WORD, READ_WORD, LOAD_WORD, SHIFT_READ_PREV_WORD, READ_PREV_WORD, LOAD_PREV_WORD, SHIFT_WRITE_PREV_WORD, WRITE_PREV_WORD, SHIFT_READ_PREV_CRED, READ_PREV_CRED, LOAD_PREV_CRED, SHIFT_WRITE_PREV_CRED, WRITE_PREV_CRED, SHIFT_CRED, CRED, DONE);
     signal current_state, next_state : state_type; -- stato attuale (aggiornato sul fronte di salita del clock) e stato prossimo
+    signal non_zero, next_non_zero: std_logic; -- diventano 1 appena si riscontra una parola diversa da zero
     signal o_mem_addr_tmp : std_logic_vector(15 downto 0); -- segnale interno che rappresenta o_mem_addr allo stato successivo
     signal o_mem_data_tmp : std_logic_vector(7 downto 0); -- segnale interno che rappresenta o_mem_data allo stato successivo
     signal o_done_tmp, o_mem_en_tmp, o_mem_we_tmp : std_logic; -- segnali interni che rappresentano o_done, o_mem_en e o_mem_we allo stato successivo
@@ -34,6 +35,7 @@ begin
     begin
         if i_rst = '1' then -- inizializzazione dei segnali di uscita e ritorno allo stato di reset
             current_state <= RESET;
+            non_zero <= '0';
 
             o_mem_addr <= (others => '0');
             o_mem_data <= (others => '0');
@@ -43,6 +45,7 @@ begin
 
         elsif rising_edge(i_clk) then -- sincronizzazione dei segnali di uscita e passaggio allo stato prossimo
             current_state <= next_state;
+            non_zero <= next_non_zero;
 
             o_mem_addr <= o_mem_addr_tmp;
             o_mem_data <= o_mem_data_tmp;
@@ -55,9 +58,10 @@ begin
 
     gestione_stati : process (current_state, i_rst, i_start) -- processo che aggiorna i segnali interni in base ai segnali d'ingresso e allo stato in cui ci si trova
     variable index : integer; -- indice di scorrimento nella sequenza
-    variable non_zero: std_logic; -- variabile che diventa 1 appena si riscontra una parola diversa da zero
     begin
         next_state <= RESET;
+        next_non_zero <= '0';
+
         o_mem_addr_tmp <= (others => '0');
         o_mem_data_tmp <= (others => '0');
         o_done_tmp <= '0';
@@ -66,13 +70,15 @@ begin
         
         if current_state = RESET OR current_state = WAITING then
             if i_rst = '0' then
-                if i_start = '0' then
+                if i_start = '0' then 
 
                     if current_state = RESET then
                         next_state <= WAITING;
                     else 
                         next_state <= current_state;
                     end if;
+
+                    next_non_zero <= '0';
 
                     o_mem_addr_tmp <= (others => '0');
                     o_mem_data_tmp <= (others => '0');
@@ -83,7 +89,7 @@ begin
                     next_state <= SHIFT_WORD; -- inizio della computazione
 
                     index := 0;
-                    non_zero := '0';
+                    next_non_zero <= '0';
 
                     o_mem_addr_tmp <= i_add; -- si comincia a leggere dal primo indirizzo
                     o_mem_data_tmp <= (others => '0');
@@ -100,6 +106,8 @@ begin
             else
                 next_state <= LOAD_WORD;
             end if;
+            
+            next_non_zero <= non_zero;
 
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_data_tmp <= (others => '0');
@@ -112,7 +120,7 @@ begin
                 next_state <= SHIFT_CRED; -- non modifico il valore e passo allo stato successivo
 
                 index := index + 1;
-                non_zero := '0';
+                next_non_zero <= '0';
 
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                 o_mem_data_tmp <= (others => '0');
@@ -125,7 +133,7 @@ begin
                     next_state <= SHIFT_READ_PREV_WORD;
 
                     index := index - 2;
-                    non_zero := '1';
+                    next_non_zero <= '1';
 
                     o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                     o_mem_data_tmp <= (others => '0');
@@ -136,7 +144,7 @@ begin
                     next_state <= SHIFT_CRED;
 
                     index := index + 1;
-                    non_zero := '1';
+                    next_non_zero <= '1';
 
                     o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                     o_mem_data_tmp <= "00011111";
@@ -153,6 +161,8 @@ begin
                 next_state <= LOAD_PREV_WORD;
             end if;
 
+            next_non_zero <= '1';
+
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_data_tmp <= (others => '0');
             o_done_tmp <= '0';
@@ -161,6 +171,8 @@ begin
         
         elsif current_state = LOAD_PREV_WORD then
             next_state <= SHIFT_WRITE_PREV_WORD;
+            
+            next_non_zero <= '1';
 
             index := index + 2;
 
@@ -172,8 +184,7 @@ begin
         
         elsif current_state = SHIFT_WRITE_PREV_WORD then
             next_state <= WRITE_PREV_WORD;
-            
-            non_zero := '1';
+            next_non_zero <= '1';
             
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_data_tmp <= i_mem_data;
@@ -186,7 +197,7 @@ begin
             next_state <= SHIFT_READ_PREV_CRED;
 
             index := index - 1;
-            non_zero := '1';
+            next_non_zero <= '1';
 
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_data_tmp <= (others => '0');
@@ -201,14 +212,7 @@ begin
                 next_state <= LOAD_PREV_CRED;
             end if;
 
-            o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
-            o_mem_data_tmp <= (others => '0');
-            o_done_tmp <= '0';
-            o_mem_en_tmp <= '1';
-            o_mem_we_tmp <= '0';
-            
-        elsif current_state = READ_PREV_CRED then
-            next_state <= LOAD_PREV_CRED;
+            next_non_zero <= '1';
 
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_data_tmp <= (others => '0');
@@ -220,7 +224,8 @@ begin
             next_state <= SHIFT_WRITE_PREV_CRED;
 
             index := index + 2;
-            non_zero := '1';
+            next_non_zero <= '1';
+            
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
 
             if (signed(i_mem_data) > 0) then
@@ -236,7 +241,7 @@ begin
         elsif current_state = SHIFT_WRITE_PREV_CRED then
             next_state <= WRITE_PREV_CRED;
 
-            non_zero := '1';
+            next_non_zero <= '1';
 
             o_done_tmp <= '0';
             o_mem_en_tmp <= '1';
@@ -248,7 +253,7 @@ begin
             if (index < (signed(i_k) + signed(i_k) - 1)) then
                 next_state <= SHIFT_WORD;
 
-                non_zero := '1';
+                next_non_zero <= '1';
 
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                 o_mem_data_tmp <= (others => '0');
@@ -259,7 +264,7 @@ begin
                 next_state <= DONE;
 
                 index := 0;
-                non_zero := '0';
+                next_non_zero <= '0';
 
                 o_mem_addr_tmp <= (others => '0');
                 o_mem_data_tmp <= (others => '0');
@@ -272,7 +277,7 @@ begin
             next_state <= CRED;
             
             if non_zero = '1' then
-                non_zero := '1';
+                next_non_zero <= '1';
 
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                 o_mem_data_tmp <= "00011111";
@@ -280,7 +285,7 @@ begin
                 o_mem_en_tmp <= '1';
                 o_mem_we_tmp <= '1';
             else
-                non_zero := '0';
+                next_non_zero <= '0';
 
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                 o_mem_data_tmp <= "00000000";
@@ -297,7 +302,7 @@ begin
                 if (index < (signed(i_k) + signed(i_k) - 1)) then
                     next_state <= SHIFT_WORD;
 
-                    non_zero := '0';
+                    next_non_zero <= '0';
 
                     o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                     o_mem_data_tmp <= (others => '0');
@@ -308,7 +313,7 @@ begin
                     next_state <= DONE;
 
                     index := 0;
-                    non_zero := '0';
+                    next_non_zero <= '0';
 
                     o_mem_addr_tmp <= (others => '0');
                     o_mem_data_tmp <= (others => '0');
@@ -322,7 +327,7 @@ begin
                 if (index < (signed(i_k) + signed(i_k) - 1)) then
                     next_state <= SHIFT_WORD;
 
-                    non_zero := '1';
+                    next_non_zero <= '1';
 
                     o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
                     o_mem_data_tmp <= (others => '0');
@@ -333,7 +338,7 @@ begin
                     next_state <= DONE;
 
                     index := 0;
-                    non_zero := '0';
+                    next_non_zero <= '0';
 
                     o_mem_addr_tmp <= (others => '0');
                     o_mem_data_tmp <= (others => '0');
@@ -347,7 +352,7 @@ begin
             next_state <= WAITING;
 
             index := 0;
-            non_zero := '0';
+            next_non_zero <= '0';
 
             o_mem_addr_tmp <= (others => '0');
             o_mem_data_tmp <= (others => '0');
@@ -357,6 +362,7 @@ begin
         
         else
             next_state <= RESET;
+            next_non_zero <= '0';
         
         end if;
     end process;
