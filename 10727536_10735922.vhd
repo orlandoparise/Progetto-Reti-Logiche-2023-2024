@@ -235,12 +235,6 @@ begin
             
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 2);
 
-            if (signed(i_mem_data) > 0) then
-                o_mem_data_tmp <= std_logic_vector(signed(i_mem_data) - 1);
-            else
-                o_mem_data_tmp <= "00000000";
-            end if;
-
             o_done_tmp <= '0';
             o_mem_en_tmp <= '1';
             o_mem_we_tmp <= '1';
@@ -266,7 +260,7 @@ begin
         elsif current_state = WRITE_PREV_CRED then
             next_index <= index + 1;
 
-            if (next_index < (signed(i_k) + signed(i_k) - 1)) then
+            if ((index + 1) < (signed(i_k) + signed(i_k) - 1)) then
                 next_state <= SHIFT_WORD;
 
                 next_non_zero <= '1';
@@ -316,7 +310,7 @@ begin
                 
                 next_index <= index + 1;
 
-                if (next_index < (signed(i_k) + signed(i_k) - 1)) then
+                if ((index + 1) < (signed(i_k) + signed(i_k) - 1)) then
                     next_state <= SHIFT_WORD;
 
                     next_non_zero <= '0';
