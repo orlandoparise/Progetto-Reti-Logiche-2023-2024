@@ -222,29 +222,19 @@ begin
             end if;
 
         elsif current_state = CRED then
-            if non_zero = '0' then -- se non è ancora stata letta una parola diversa da zero
-                next_index <= index + 1;
+            next_index <= index + 1;
 
-                if ((index + 1) < (signed(i_k) + signed(i_k) - 1)) then -- si verifica che non sia stata raggiunta la fine della sequenza
-                    next_state <= SHIFT_WORD;
-                    o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 1);
-                    o_mem_en_tmp <= '1';
-                else
-                    next_state <= DONE;
-                    o_done_tmp <= '1';
+            if ((index + 1) < (signed(i_k) + signed(i_k) - 1)) then -- si verifica che non sia stata raggiunta la fine della sequenza
+                next_state <= SHIFT_WORD;
+                o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 1);
+                o_mem_en_tmp <= '1';
+
+                if non_zero = '1' then -- se è già stata letta una parola diversa da zero
+                    next_non_zero <= '1';
                 end if;
             else
-                next_index <= index + 1;
-
-                if ((index + 1) < (signed(i_k) + signed(i_k) - 1)) then -- si verifica che non sia stata raggiunta la fine della sequenza
-                    next_state <= SHIFT_WORD;
-                    next_non_zero <= '1';
-                    o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 1);
-                    o_mem_en_tmp <= '1';
-                else
-                    next_state <= DONE;
-                    o_done_tmp <= '1';
-                end if;
+                next_state <= DONE;
+                o_done_tmp <= '1';
             end if;
         
         elsif current_state = DONE then
