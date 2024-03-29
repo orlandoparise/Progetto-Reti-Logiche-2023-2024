@@ -217,7 +217,6 @@ begin
                 o_mem_we_tmp <= '1';
             else
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
-                o_mem_data_tmp <= "00000000";
                 o_mem_en_tmp <= '1';
                 o_mem_we_tmp <= '1';
             end if;
