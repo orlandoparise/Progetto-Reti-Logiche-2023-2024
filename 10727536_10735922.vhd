@@ -77,7 +77,7 @@ begin
                         next_state <= current_state;
                     end if;
                 else
-                    if i_k > 0 then -- si verifica che non sia stata raggiunta la fine della sequenza
+                    if signed(i_k) > 0 then -- si verifica che non sia stata raggiunta la fine della sequenza
                         next_state <= SHIFT_WORD; -- inizio della computazione
                         o_mem_addr_tmp <= i_add; -- si comincia a leggere dal primo indirizzo
                         o_mem_en_tmp <= '1';
