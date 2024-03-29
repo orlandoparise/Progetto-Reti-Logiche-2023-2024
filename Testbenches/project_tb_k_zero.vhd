@@ -24,7 +24,7 @@ architecture project_tb_k_arch of project_tb_k is
     signal RAM : ram_type := (OTHERS => "00000000");
 
     constant SCENARIO_LENGTH : integer := 0;
-    type scenario_type is array (0 to SCENARIO_LENGTH*2-1) of integer;
+    type scenario_type is array (0 to 27) of integer;
 
     signal scenario_input : scenario_type := (128, 0,  64, 23,   0,  12,  0,  71,  0,  0,  14,  0,  0,  0, 100,  0, 1,  0, 91,  0, 5,  0, 23,  0, 200,  0,   0,  0 );
     signal scenario_full  : scenario_type := (128, 0,  64, 23,   0,  12,  0,  71,  0,  0,  14,  0,  0,  0, 100,  0, 1,  0, 91,  0, 5,  0, 23,  0, 200,  0,   0,  0 );
@@ -127,7 +127,7 @@ begin
         wait until falling_edge(tb_clk); -- Skew the testbench transitions with respect to the clock
 
         -- Configure the memory        
-        for i in 0 to SCENARIO_LENGTH*2-1 loop
+        for i in 0 to 27 loop
             init_o_mem_addr<= std_logic_vector(to_unsigned(SCENARIO_ADDRESS+i, 16));
             init_o_mem_data<= std_logic_vector(to_unsigned(scenario_input(i),8));
             init_o_mem_en  <= '1';
@@ -176,7 +176,7 @@ begin
 
         assert tb_o_mem_en = '0' or tb_o_mem_we = '0' report "TEST FALLITO o_mem_en !=0 memory should not be written after done." severity failure;
 
-        for i in 0 to SCENARIO_LENGTH*2-1 loop
+        for i in 0 to 27 loop
             assert RAM(SCENARIO_ADDRESS+i) = std_logic_vector(to_unsigned(scenario_full(i),8)) report "TEST FALLITO @ OFFSET=" & integer'image(i) & " expected= " & integer'image(scenario_full(i)) & " actual=" & integer'image(to_integer(unsigned(RAM(SCENARIO_ADDRESS+i)))) severity failure;
         end loop;
 
