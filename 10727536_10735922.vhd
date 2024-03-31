@@ -23,9 +23,9 @@ end project_reti_logiche;
 
 architecture behavioral of project_reti_logiche is
     type state_type is (RESET, WAITING, SHIFT_WORD, READ_WORD, LOAD_WORD, SHIFT_READ_PREV_WORD, READ_PREV_WORD, LOAD_PREV_WORD, SHIFT_WRITE_PREV_WORD, WRITE_PREV_WORD, SHIFT_READ_PREV_CRED, READ_PREV_CRED, LOAD_PREV_CRED, SHIFT_WRITE_PREV_CRED, WRITE_PREV_CRED, SHIFT_CRED, CRED, DONE); -- stati della FSM
-    signal current_state, next_state : state_type; -- stato attuale (aggiornato sul fronte di salita del clock) e stato successivo
-    signal non_zero, next_non_zero: std_logic; -- riscontro di una parola diversa da zero, allo stato attuale e allo stato successivo
-    signal index, next_index: integer; -- indice nella sequenza, allo stato attuale e allo stato successivo
+    signal current_state, next_state : state_type; -- stato attuale (aggiornato sul fronte di salita del clock) e successivo
+    signal non_zero, next_non_zero: std_logic; -- riscontro di una parola diversa da zero, allo stato attuale e al successivo
+    signal index, next_index: integer; -- indice nella sequenza, allo stato attuale e al successivo
     signal o_mem_addr_tmp : std_logic_vector(15 downto 0); -- o_mem_addr allo stato successivo
     signal o_mem_data_tmp : std_logic_vector(7 downto 0); -- o_mem_data allo stato successivo
     signal o_done_tmp, o_mem_en_tmp, o_mem_we_tmp : std_logic; -- o_done, o_mem_en e o_mem_we allo stato successivo
@@ -43,7 +43,7 @@ begin
             o_mem_en <= '0';
             o_mem_we <= '0';
 
-        elsif rising_edge(i_clk) then -- sincronizzazione dei segnali (interni e di uscita) sul fronte di salita del clock
+        elsif rising_edge(i_clk) then -- sincronizzazione dei segnali sul fronte di salita del clock
             current_state <= next_state;
             non_zero <= next_non_zero;
             index <= next_index;
@@ -56,7 +56,7 @@ begin
         end if;
     end process;
 
-    manage_states : process (current_state, i_rst, i_start) -- processo che aggiorna i segnali interni in base ai segnali d'ingresso e allo stato in cui ci si trova
+    manage_states : process (current_state, i_rst, i_start) -- processo che aggiorna i segnali interni
     begin
         -- segnali di default che prevengono la generazione di latch
         next_state <= RESET;
@@ -70,7 +70,7 @@ begin
         
         if current_state = RESET OR current_state = WAITING then
             if i_rst = '0' then
-                if i_start = '0' then -- se il segnale di reset è abbassato e quello di start deve ancora alzarsi ci si trova nello stato di attesa
+                if i_start = '0' then -- si va nello stato di attesa
                     if current_state = RESET then
                         next_state <= WAITING;
                     else 
@@ -96,12 +96,12 @@ begin
             end if;
 
             next_non_zero <= non_zero;
-            next_index <= index; -- si rimane all'indirizzo corrente per accedere a quanto letto
+            next_index <= index; -- si rimane all'indirizzo corrente per accedere al valore letto
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_en_tmp <= '1';
         
         elsif current_state = LOAD_WORD then
-            if i_mem_data = "00000000" AND non_zero = '0' then -- non sono ancora state trovate parole diverse da zero
+            if i_mem_data = "00000000" AND non_zero = '0' then -- se non sono ancora state trovate parole diverse da zero
                 next_state <= SHIFT_CRED;
                 next_index <= index + 1;
                 o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 1);
@@ -133,14 +133,14 @@ begin
             end if;
 
             next_non_zero <= '1';
-            next_index <= index; -- si rimane all'indirizzo corrente per accedere a quanto letto
+            next_index <= index; -- si rimane all'indirizzo corrente per accedere al valore letto
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_en_tmp <= '1';
         
         elsif current_state = LOAD_PREV_WORD then
             next_state <= SHIFT_WRITE_PREV_WORD;
             next_non_zero <= '1';
-            next_index <= index + 2; -- si torna all'indirizzo della parola uguale a zero
+            next_index <= index + 2; -- si torna all'indirizzo della parola nulla
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index + 2);
             o_mem_data_tmp <= i_mem_data;
             o_mem_en_tmp <= '1';
@@ -170,7 +170,7 @@ begin
             end if;
 
             next_non_zero <= '1';
-            next_index <= index; -- si rimane all'indirizzo corrente per accedere a quanto letto
+            next_index <= index; -- si rimane all'indirizzo corrente per accedere al valore letto
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
             o_mem_en_tmp <= '1';
         
@@ -188,7 +188,7 @@ begin
             next_index <= index; -- si rimane all'indirizzo corrente per scrivere la credibiltà
             o_mem_addr_tmp <= std_logic_vector(signed(i_add) + index);
 
-            if (signed(i_mem_data) > 0) then -- il valore non può essere essere negativo
+            if (signed(i_mem_data) > 0) then -- se il valore della credibilità precedente è maggiore di zero 
                 o_mem_data_tmp <= std_logic_vector(signed(i_mem_data) - 1); 
             else
                 o_mem_data_tmp <= "00000000";
