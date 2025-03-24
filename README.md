@@ -1,1 +1,1 @@
-# Progetto-Reti-Logiche
+# Progetto di Reti Logiche
