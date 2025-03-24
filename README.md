@@ -1,2 +1,2 @@
-# Progetto di Reti Logiche (a.a. 2023-2024)
-Prova finale del corso di Reti Logiche al Politecnico di Milano. La specifica richiede di progettare 
+# Progetto di Reti Logiche
+Prova finale del corso di Reti Logiche al Politecnico di Milano. Anno accademico 2023-2024. Voto finale: 29
